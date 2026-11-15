@@ -35,7 +35,12 @@ Respond with STRICT JSON only, no prose, in this shape:
 {
   "summary": "one sentence overall verdict",
   "warnings": [
-    { "severity": "high|medium|low", "message": "specific, actionable", "basedOn": "which recorded reason/commit this comes from" }
+    {
+      "severity": "high|medium|low",
+      "message": "specific, actionable",
+      "basedOn": "which recorded reason/commit this comes from",
+      "action": "one concrete next step the author should take, grounded in the commit history (e.g. 'Read commit abc1234 and confirm your change preserves the exactly-once guard')"
+    }
   ]
 }
 If nothing in the history is at risk, return an empty "warnings" array and say so in the summary.`;
@@ -49,18 +54,28 @@ export function heuristicReview(knowledge, diff) {
   for (const c of knowledge.notableCommits || []) {
     const text = `${c.subject} ${c.body}`;
     if (riskyWords.test(text)) {
+      const short = c.hash?.slice(0, 8);
       warnings.push({
         severity: "medium",
         message: `This area carries a sensitive decision: "${c.subject}". Make sure your change preserves it.`,
-        basedOn: `${c.hash?.slice(0, 8)} — ${c.author}`,
+        basedOn: `${short} — ${c.author}`,
+        action: `Read commit ${short} and confirm your change does not undo the decision recorded there.`,
       });
     }
   }
   if ((knowledge.contributors || []).length >= 3) {
+    const hashes = (knowledge.notableCommits || [])
+      .slice(0, 3)
+      .map((c) => c.hash?.slice(0, 8))
+      .filter(Boolean)
+      .join(", ");
     warnings.push({
       severity: "low",
       message: `Many hands shaped this file (${knowledge.contributors.length} contributors). Context is spread out — review notable commits before changing behavior.`,
       basedOn: "contributor spread",
+      action: hashes
+        ? `Check the notable commits (${hashes}) to understand prior intent before merging.`
+        : "Review the notable commits listed above before merging.",
     });
   }
   return {

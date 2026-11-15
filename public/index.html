@@ -113,6 +113,7 @@
   .warn.medium .sev { color: var(--medium); }
   .warn.low .sev { color: var(--low); }
   .warn .msg { margin-top: 5px; line-height: 1.5; }
+  .warn .action { margin-top: 6px; font-size: 12.5px; color: var(--muted); font-style: italic; }
   .warn .based { margin-top: 7px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
   .clean { color: var(--accent-2); font-size: 14px; margin-top: 12px; }
   .enginetag { font-family: var(--mono); font-size: 11px; color: var(--muted); float: right; }
@@ -248,6 +249,7 @@ function render(data) {
       return `<div class="warn ${esc(sev)}">
         <span class="sev">${esc(sev)}</span>
         <div class="msg">${esc(w.message)}</div>
+        ${w.action ? `<div class="action">↳ Next step: ${esc(w.action)}</div>` : ""}
         ${w.basedOn ? `<div class="based">↳ based on: ${esc(w.basedOn)}</div>` : ""}
       </div>`;
     }).join("");
