@@ -30,6 +30,11 @@ export async function reviewPullRequest({ repo, pr, token, maxFiles = 6 } = {}) 
 
   const files = [];
   for (const { file, patch } of sections) {
+    // Skip binary files (images, fonts, …) — no text reasoning to protect.
+    if (/\nBinary files .* differ|\nGIT binary patch/.test(patch)) {
+      files.push({ file, isBinary: true, knowledge: null, review: null });
+      continue;
+    }
     const knowledge = await extractKnowledgeFromApi(owner, name, file, { token });
     let review = null;
     if (knowledge.exists) review = await reviewChange(knowledge, patch);

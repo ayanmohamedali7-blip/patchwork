@@ -78,7 +78,10 @@
 - **15 نوف:** **الواجهة + السيرفر شغّالين end-to-end** 🎉 (`src/server/index.mjs` zero-dep node:http + `src/pipeline.mjs` + `public/index.html` بلبسة المعمل).
   اختُبر حيّ في المتصفح: دخّلنا expressjs/express → جاب PR #7565 → عرض تحذير HIGH (body-parser CVE) مستشهد بالـcommit، بتصميم أنيق. السيرفر على localhost:4175.
 - **المنتج الأساسي (MVP) مكتمل وظيفياً:** GitHub → تاريخ → خبرة → مراجعة Gemini → واجهة. 
-- **مفتوح:** (1) عمق Kiro (hooks/specs/MCP) + توثيقه. (2) النشر على رابط عام (Render/Cloudflare). (3) فيديو عرض <3د. (4) صقل + حالات الخطأ. (5) منك: تسجيل Devpost + كريدت Kiro قبل 1 ديسمبر.
+- **15 نوف:** **عمق Kiro مكتمل** 🎯 — steering (3) + spec كامل (requirements EARS/design/tasks في `.kiro/specs/patchwork-review/`) + خطّافان (`.kiro/hooks/`: dogfood-review على الحفظ، syntax-guard على Stop + `scripts/guard.mjs`) + MCP (`.kiro/settings/mcp.json`: github + fetch). الصيغ مطابقة لتوثيق Kiro الرسمي.
+- **15 نوف:** اختبارات `node --test` (`src/patchwork.test.mjs`) **4/4 نجحت**. + README للجنة (يشرح المنتج والمشكلة واستخدام Kiro).
+- **15 نوف:** **git محلي مُهيّأ + أول commit** (`efcef80`). `.env` محمي (غير متتبع)، `.kiro` متتبع. لا GitHub remote بعد.
+- **مفتوح:** (1) **رفع لمستودع GitHub عام** (يحتاج GitHub بتاعه — عمل عام، نستأذنه). (2) **نشر على رابط عام**. (3) فيديو عرض <3د (صوته). (4) صقل/حالات خطأ. (5) منه: تسجيل Devpost + كريدت Kiro قبل 1 ديسمبر.
 
 ## 9) قرارات مثبّتة
 - لا أوفلاين — التطبيق **حديث ومتصل** (محمد: الأوفلاين قديم وما يبهرش اللجنة الأجانب).
