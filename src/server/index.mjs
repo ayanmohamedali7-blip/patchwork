@@ -3,6 +3,7 @@
 
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, normalize } from "node:path";
 import { loadEnv } from "../lib/env.mjs";
@@ -39,6 +40,10 @@ async function serveStatic(req, res) {
     const ext = full.slice(full.lastIndexOf("."));
     send(res, 200, data, MIME[ext] || "application/octet-stream");
   } catch {
+    if (path === "/index.html") {
+      // Root must always answer (never 404) so platform health checks pass.
+      return send(res, 200, "<h1>Patchwork</h1><p>Starting…</p>", MIME[".html"]);
+    }
     send(res, 404, "Not found");
   }
 }
@@ -53,6 +58,7 @@ function readBody(req) {
 
 const server = createServer(async (req, res) => {
   try {
+    console.log(`${req.method} ${req.url}`);
     if (req.method === "POST" && req.url === "/api/review") {
       const body = await readBody(req);
       let input = {};
@@ -82,5 +88,7 @@ const server = createServer(async (req, res) => {
 
 // Bind to 0.0.0.0 so the host platform (Render, etc.) can route to it.
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`\n🔧 Patchwork running on port ${PORT}\n`);
+  console.log(`\n🔧 Patchwork on port ${PORT} (env.PORT=${process.env.PORT})`);
+  console.log(`PUBLIC=${PUBLIC}`);
+  console.log(`index.html exists=${existsSync(join(PUBLIC, "index.html"))}\n`);
 });
