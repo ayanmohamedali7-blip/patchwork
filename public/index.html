@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Patchwork</title>
+<style>
+  :root {
+    --bg: #0d1016;
+    --bg-grid: rgba(90, 120, 160, 0.06);
+    --panel: #141924;
+    --panel-2: #1a2130;
+    --line: #273040;
+    --fg: #e6ebf2;
+    --muted: #8a97ab;
+    --accent: #f2a541;      /* workshop amber */
+    --accent-2: #37d3c3;    /* electric teal */
+    --high: #ff5c5c;
+    --medium: #f2a541;
+    --low: #7f8ca3;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    color: var(--fg);
+    background:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 28px 28px,
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0 / 28px 28px,
+      radial-gradient(1200px 500px at 50% -10%, #17202e 0%, var(--bg) 60%);
+    min-height: 100vh;
+  }
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 0 max(16px, env(safe-area-inset-left, 0px));
+    padding-block: 40px 80px;
+  }
+
+  /* header */
+  header { text-align: center; margin-bottom: 30px; }
+  .logo { display: inline-flex; align-items: center; gap: 12px; }
+  .logo svg { width: 42px; height: 42px; }
+  .logo h1 {
+    font-size: 34px; margin: 0; letter-spacing: -0.5px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .tagline { color: var(--muted); margin: 14px auto 0; max-width: 560px; line-height: 1.5; }
+  .tagline b { color: var(--fg); font-weight: 600; }
+  .badge {
+    display: inline-block; margin-top: 14px; font-size: 12px; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--accent-2);
+    border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px;
+  }
+
+  /* form */
+  .card {
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border: 1px solid var(--line); border-radius: 14px; padding: 20px;
+  }
+  form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+  .field { flex: 1 1 220px; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  .field.small { flex: 0 1 130px; }
+  label { font-size: 12px; color: var(--muted); letter-spacing: 0.4px; }
+  input {
+    background: #0e121b; border: 1px solid var(--line); color: var(--fg);
+    border-radius: 10px; padding: 12px 14px; font-size: 15px; font-family: var(--mono);
+    min-width: 0; width: 100%;
+  }
+  input:focus { outline: none; border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(55,211,195,0.12); }
+  button {
+    background: linear-gradient(180deg, var(--accent), #e0932f); color: #1a140a;
+    border: 0; border-radius: 10px; padding: 12px 22px; font-size: 15px; font-weight: 700;
+    cursor: pointer; white-space: nowrap;
+  }
+  button:disabled { opacity: 0.55; cursor: progress; }
+  .examples { margin-top: 14px; font-size: 13px; color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .chip {
+    font-family: var(--mono); font-size: 12px; color: var(--accent-2);
+    border: 1px solid var(--line); border-radius: 8px; padding: 4px 9px; cursor: pointer; background: #0e121b;
+  }
+  .chip:hover { border-color: var(--accent-2); }
+
+  /* status */
+  #status { margin: 26px 0 0; text-align: center; color: var(--muted); min-height: 24px; }
+  .spinner {
+    display: inline-block; width: 15px; height: 15px; margin-right: 8px; vertical-align: -2px;
+    border: 2px solid var(--line); border-top-color: var(--accent-2); border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error { color: var(--high); }
+
+  /* results */
+  #prhead { margin: 30px 0 10px; display: none; }
+  #prhead a { color: var(--accent-2); text-decoration: none; font-family: var(--mono); font-size: 14px; }
+  #prhead h2 { margin: 6px 0 0; font-size: 20px; }
+
+  .file { margin-top: 16px; }
+  .file-name { font-family: var(--mono); font-size: 14px; color: var(--accent); word-break: break-all; }
+  .file-sum { color: var(--muted); font-size: 13.5px; margin-top: 6px; line-height: 1.5; }
+  .verdict { margin-top: 14px; padding: 12px 14px; border-radius: 10px; background: #0e121b; border: 1px solid var(--line); line-height: 1.5; }
+  .verdict .label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+
+  .warn { margin-top: 12px; border-left: 3px solid var(--low); padding: 10px 14px; background: rgba(255,255,255,0.02); border-radius: 0 8px 8px 0; }
+  .warn.high { border-left-color: var(--high); }
+  .warn.medium { border-left-color: var(--medium); }
+  .warn .sev { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+  .warn.high .sev { color: var(--high); }
+  .warn.medium .sev { color: var(--medium); }
+  .warn.low .sev { color: var(--low); }
+  .warn .msg { margin-top: 5px; line-height: 1.5; }
+  .warn .based { margin-top: 7px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .clean { color: var(--accent-2); font-size: 14px; margin-top: 12px; }
+  .enginetag { font-family: var(--mono); font-size: 11px; color: var(--muted); float: right; }
+  footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 50px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="6" y="6" width="36" height="36" rx="7" stroke="url(#g)" stroke-width="2.5"/>
+          <path d="M24 6V42" stroke="url(#g)" stroke-width="2" stroke-dasharray="3 4"/>
+          <path d="M6 24H42" stroke="url(#g)" stroke-width="2" stroke-dasharray="3 4"/>
+          <circle cx="24" cy="24" r="4.5" fill="url(#g)"/>
+          <defs><linearGradient id="g" x1="6" y1="6" x2="42" y2="42"><stop stop-color="#f2a541"/><stop offset="1" stop-color="#37d3c3"/></linearGradient></defs>
+        </svg>
+        <h1>Patchwork</h1>
+      </div>
+      <p class="tagline">Every file was shaped by many hands, for reasons that leave when they do.
+        Patchwork reads a repo's history, <b>stitches that knowledge back together</b>, and warns you
+        before a change breaks what someone built on purpose.</p>
+      <span class="badge">Kiroween · Frankenstein</span>
+    </header>
+
+    <div class="card">
+      <form id="form">
+        <div class="field">
+          <label for="repo">GitHub repository</label>
+          <input id="repo" name="repo" placeholder="owner/name  (e.g. expressjs/express)" autocomplete="off" />
+        </div>
+        <div class="field small">
+          <label for="pr">PR # (optional)</label>
+          <input id="pr" name="pr" placeholder="latest" inputmode="numeric" autocomplete="off" />
+        </div>
+        <button id="run" type="submit">Run review</button>
+      </form>
+      <div class="examples">
+        <span>Try:</span>
+        <span class="chip" data-repo="expressjs/express">expressjs/express</span>
+        <span class="chip" data-repo="sindresorhus/got">sindresorhus/got</span>
+        <span class="chip" data-repo="honojs/hono">honojs/hono</span>
+      </div>
+    </div>
+
+    <div id="status"></div>
+
+    <div id="prhead">
+      <a id="prlink" href="#" target="_blank" rel="noopener"></a>
+      <h2 id="prtitle"></h2>
+    </div>
+    <div id="results"></div>
+
+    <footer>Patchwork · built with Kiro for Kiroween 2026</footer>
+  </div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const form = $("#form"), statusEl = $("#status"), results = $("#results"),
+      prhead = $("#prhead"), run = $("#run");
+
+function esc(s){ return String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+document.querySelectorAll(".chip").forEach(c =>
+  c.addEventListener("click", () => { $("#repo").value = c.dataset.repo; $("#pr").value = ""; form.requestSubmit(); })
+);
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const repo = $("#repo").value.trim();
+  const pr = $("#pr").value.trim();
+  if (!repo) return;
+  run.disabled = true; results.innerHTML = ""; prhead.style.display = "none";
+  statusEl.className = "";
+  statusEl.innerHTML = '<span class="spinner"></span> Reading the history, stitching the knowledge…';
+  try {
+    const res = await fetch("/api/review", {
+      method: "POST", headers: {"content-type":"application/json"},
+      body: JSON.stringify({ repo, pr: pr || undefined })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Review failed.");
+    render(data);
+    statusEl.innerHTML = "";
+  } catch (err) {
+    statusEl.className = "error"; statusEl.textContent = "⚠ " + err.message;
+  } finally { run.disabled = false; }
+});
+
+function render(data) {
+  $("#prlink").textContent = data.owner + "/" + data.repo + " · PR #" + data.number;
+  $("#prlink").href = data.url;
+  $("#prtitle").textContent = data.title || "";
+  prhead.style.display = "block";
+
+  if (!data.files.length) { results.innerHTML = '<div class="card">No changed files found in this PR.</div>'; return; }
+
+  results.innerHTML = data.files.map(f => {
+    if (f.isNew) {
+      return `<div class="card file"><div class="file-name">${esc(f.file)}</div>
+        <div class="file-sum">New file — no prior history to protect.</div></div>`;
+    }
+    const k = f.knowledge, r = f.review || {warnings:[], summary:"", engine:""};
+    const warns = (r.warnings||[]).map(w => {
+      const sev = (w.severity||"low").toLowerCase();
+      return `<div class="warn ${esc(sev)}">
+        <span class="sev">${esc(sev)}</span>
+        <div class="msg">${esc(w.message)}</div>
+        ${w.basedOn ? `<div class="based">↳ based on: ${esc(w.basedOn)}</div>` : ""}
+      </div>`;
+    }).join("");
+    const clean = (r.warnings||[]).length === 0
+      ? `<div class="clean">✓ Nothing in this area's history looks at risk from this change.</div>` : "";
+    return `<div class="card file">
+      <div class="file-name">${esc(f.file)}</div>
+      <div class="file-sum">${esc(k.summary)}</div>
+      <div class="verdict">
+        <span class="enginetag">${esc(r.engine||"")}</span>
+        <span class="label">Verdict</span><br>${esc(r.summary||"")}
+        ${warns}${clean}
+      </div>
+    </div>`;
+  }).join("");
+}
+</script>
+</body>
+</html>

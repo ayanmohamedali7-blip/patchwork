@@ -1,0 +1,15 @@
+{
+  "name": "patchwork",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Patchwork — stitches together the knowledge behind every area of a codebase, and warns you before a change breaks something.",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "knowledge": "node src/cli.mjs",
+    "dev": "node src/server/index.mjs",
+    "test": "node --test"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Patchwork reviews its own changes",
+      "description": "When a source file is saved, ask the agent to run Patchwork's own idea against the edit: check the changed file's history and warn if the change undoes a decision recorded in a past commit. Dogfooding — the tool guards the tool.",
+      "trigger": "PostFileSave",
+      "matcher": "^src/.*\\.mjs$",
+      "action": {
+        "type": "agent",
+        "prompt": "A source file under src/ was just saved. Following the project steering (product.md, tech.md), reconstruct the knowledge behind this file from its git history (authors + the reasons recorded in notable commit messages). If the edit appears to undo or weaken a decision recorded in history (money-safety, security, rate limits, provider pricing, etc.), warn me with a one-line reason and the commit subject it is based on. If nothing is at risk, say so briefly. Do not fabricate — ground every point in the real history."
+      }
+    }
+  ]
+}

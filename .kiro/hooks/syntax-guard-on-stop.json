@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Syntax guard",
+      "description": "After the agent finishes a turn, run node --check on every source file so a broken edit never lingers.",
+      "trigger": "Stop",
+      "action": {
+        "type": "command",
+        "command": "node scripts/guard.mjs"
+      },
+      "timeout": 60
+    }
+  ]
+}

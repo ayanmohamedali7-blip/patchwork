@@ -1,0 +1,20 @@
+# deps & build
+node_modules/
+dist/
+build/
+.vite/
+
+# secrets & local env
+.env
+.env.local
+*.local
+
+# os / editor noise
+.DS_Store
+Thumbs.db
+
+# demo repos we clone locally for testing (keep the repo light)
+tmp/
+sample-repos/
+
+# NOTE: .kiro/ is intentionally NOT ignored — Kiroween requires it committed.
