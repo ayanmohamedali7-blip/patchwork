@@ -17,4 +17,7 @@ Thumbs.db
 tmp/
 sample-repos/
 
+# internal owner-only record (kept local, not published)
+PROJECT-NOTES.md
+
 # NOTE: .kiro/ is intentionally NOT ignored — Kiroween requires it committed.
