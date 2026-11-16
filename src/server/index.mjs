@@ -86,8 +86,8 @@ const server = createServer(async (req, res) => {
   }
 });
 
-// Bind to 0.0.0.0 so the host platform (Render, etc.) can route to it.
-server.listen(PORT, "0.0.0.0", () => {
+// Listen on localhost.
+server.listen(PORT, "127.0.0.1", () => {
   console.log(`\n🔧 Patchwork on port ${PORT} (env.PORT=${process.env.PORT})`);
   console.log(`PUBLIC=${PUBLIC}`);
   console.log(`index.html exists=${existsSync(join(PUBLIC, "index.html"))}\n`);
