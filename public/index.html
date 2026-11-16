@@ -196,7 +196,13 @@ form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const repo = $("#repo").value.trim();
   const pr = $("#pr").value.trim();
-  if (!repo) return;
+  if (!repo) {
+    results.innerHTML = ""; prhead.style.display = "none";
+    statusEl.className = "error";
+    statusEl.textContent = "⚠ Enter a repository, e.g. expressjs/express";
+    $("#repo").focus();
+    return;
+  }
   run.disabled = true; results.innerHTML = ""; prhead.style.display = "none";
   statusEl.className = "";
   statusEl.innerHTML = '<span class="spinner"></span> Reading the history, stitching the knowledge…';

@@ -37,8 +37,12 @@ async function ghFetch(url, { token, accept, timeout = 25000 } = {}) {
       if (res.status === 403 && /rate limit/i.test(body)) {
         throw new Error("GitHub rate limit hit. Add a GITHUB_TOKEN to .env for higher limits.");
       }
-      if (res.status === 404) throw new Error(`Not found (404): ${url}`);
-      throw new Error(`GitHub HTTP ${res.status}: ${body.slice(0, 200)}`);
+      // User-facing messages stay generic; operator detail goes to the server log only.
+      console.error(`GitHub ${res.status} for ${url}: ${body.slice(0, 300)}`);
+      if (res.status === 404) {
+        throw new Error("Repository or pull request not found — check the owner/name and that the repo is public.");
+      }
+      throw new Error(`GitHub request failed (HTTP ${res.status}). Please try again in a moment.`);
     }
     return res;
   } finally {
