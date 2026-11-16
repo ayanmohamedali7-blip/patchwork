@@ -36,6 +36,19 @@ owner/repo + PR  →  GitHub API (diff + per-file history)
   a heuristic review still runs; but no warning is ever fabricated.
 - **Zero runtime dependencies.** `node:http`, `fetch`, and the GitHub REST API only.
 
+## Guards your repo automatically (GitHub Action)
+Patchwork isn't only a website — drop it into any repo and it reviews **every pull request** for
+you. The workflow in [`.github/workflows/patchwork.yml`](.github/workflows/patchwork.yml) runs
+[`src/action.mjs`](src/action.mjs) on each PR, reconstructs the history behind the changed files,
+and posts a single comment (updated in place on new pushes) that cites the commits at risk.
+```yaml
+on: { pull_request: { types: [opened, synchronize, reopened] } }
+permissions: { contents: read, pull-requests: write }
+# add GEMINI_API_KEY as a repo secret for AI reviews; without it, the grounded heuristic runs.
+```
+That's the real test of the idea: not "would someone try this once", but "would a team let it
+stand guard on their code every day."
+
 ## Built with Kiro
 Patchwork was built spec-first with Kiro, using its core features:
 - **Steering** (`.kiro/steering/`) — product, tech, and structure rules that keep every change on
@@ -45,11 +58,16 @@ Patchwork was built spec-first with Kiro, using its core features:
   own idea on the edit and warns if it undoes a recorded decision; plus a *syntax guard* on Stop.
 - **MCP** (`.kiro/settings/mcp.json`) — GitHub + fetch servers, so the Kiro agent can read repos
   and the web while building.
+- **Property-based testing** ([`src/patchwork.pbt.test.mjs`](src/patchwork.pbt.test.mjs)) — beyond a
+  few examples, 400 random diffs and repo URLs per property assert the invariants that matter:
+  the diff splitter never loses or mis-attributes a file (even when a patch body contains lines
+  that *look* like diff headers), and `parseRepo` reads the same `{owner, repo}` from shorthand,
+  URL, `.git` and SSH forms. A tiny seeded harness keeps it dependency-free and reproducible.
 
 ## Run it locally
 ```bash
 cp .env.example .env     # add a free Gemini key from https://aistudio.google.com/apikey
-npm test                 # unit tests
+npm test                 # unit + property-based tests (node --test)
 node src/server/index.mjs # http://localhost:4175
 ```
 CLI, no server:

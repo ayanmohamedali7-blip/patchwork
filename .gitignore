@@ -22,3 +22,4 @@ PROJECT-NOTES.md
 
 # NOTE: .kiro/ is intentionally NOT ignored — Kiroween requires it committed.
 video/
+test.jpg

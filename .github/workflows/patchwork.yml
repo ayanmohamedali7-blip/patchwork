@@ -1,0 +1,33 @@
+name: Patchwork PR review
+
+# Patchwork guards this repo automatically: on every pull request it reconstructs
+# the history behind each changed file and comments if the change undoes a past
+# decision. Add GEMINI_API_KEY as a repo secret for AI reviews; without it,
+# Patchwork falls back to its grounded heuristic.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run Patchwork
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: node src/action.mjs
