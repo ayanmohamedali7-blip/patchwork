@@ -6,140 +6,194 @@
 <title>Patchwork</title>
 <style>
   :root {
-    --bg: #0d1016;
-    --bg-grid: rgba(90, 120, 160, 0.06);
-    --panel: #141924;
-    --panel-2: #1a2130;
-    --line: #273040;
-    --fg: #e6ebf2;
-    --muted: #8a97ab;
+    --bg: #0b0e14;
+    --panel: rgba(20, 25, 36, 0.72);
+    --panel-2: rgba(26, 33, 48, 0.72);
+    --line: #2b3444;
+    --line-2: #3a465c;
+    --fg: #e9eef6;
+    --muted: #93a1b7;
     --accent: #f2a541;      /* workshop amber */
     --accent-2: #37d3c3;    /* electric teal */
-    --high: #ff5c5c;
+    --accent-3: #9d8bff;    /* violet spark */
+    --high: #ff6b6b;
     --medium: #f2a541;
     --low: #7f8ca3;
     --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
     --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
   * { box-sizing: border-box; }
+  html, body { min-height: 100%; }
   body {
     margin: 0;
     font-family: var(--sans);
     color: var(--fg);
-    background:
-      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 28px 28px,
-      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0 / 28px 28px,
-      radial-gradient(1200px 500px at 50% -10%, #17202e 0%, var(--bg) 60%);
+    background: var(--bg);
     min-height: 100vh;
+    overflow-x: hidden;
+  }
+  /* animated workshop backdrop */
+  #bg { position: fixed; inset: 0; z-index: -2; display: block; }
+  body::after { /* soft vignette for text contrast */
+    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background: radial-gradient(1200px 600px at 50% -5%, rgba(32,44,66,0.35), transparent 60%),
+                radial-gradient(900px 900px at 50% 120%, rgba(10,13,20,0.6), transparent 60%);
   }
   .wrap {
-    max-width: 920px;
+    max-width: 940px;
     margin: 0 auto;
     padding: 0 max(16px, env(safe-area-inset-left, 0px));
-    padding-block: 40px 80px;
+    padding-block: 54px 80px;
+    position: relative;
   }
 
   /* header */
-  header { text-align: center; margin-bottom: 30px; }
-  .logo { display: inline-flex; align-items: center; gap: 12px; }
-  .logo svg { width: 42px; height: 42px; }
+  header { text-align: center; margin-bottom: 34px; }
+  .logo { display: inline-flex; align-items: center; gap: 14px; }
+  .logo svg { width: 54px; height: 54px; filter: drop-shadow(0 4px 18px rgba(242,165,65,0.35)); }
+  .logo .dash { stroke-dasharray: 3 4; animation: stitch 3.5s linear infinite; }
+  @keyframes stitch { to { stroke-dashoffset: -28; } }
   .logo h1 {
-    font-size: 34px; margin: 0; letter-spacing: -0.5px;
-    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    font-size: 44px; margin: 0; letter-spacing: -1px; font-weight: 800;
+    background: linear-gradient(95deg, var(--accent), var(--accent-2) 62%, var(--accent-3));
     -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: 0 2px 40px rgba(55,211,195,0.15);
   }
-  .tagline { color: var(--muted); margin: 14px auto 0; max-width: 560px; line-height: 1.5; }
-  .tagline b { color: var(--fg); font-weight: 600; }
+  .tagline { color: #c3cfe0; margin: 18px auto 0; max-width: 620px; line-height: 1.55; font-size: 16px; }
+  .tagline b { color: #fff; font-weight: 600; }
   .badge {
-    display: inline-block; margin-top: 14px; font-size: 12px; letter-spacing: 1px;
-    text-transform: uppercase; color: var(--accent-2);
-    border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px;
+    display: inline-block; margin-top: 18px; font-size: 11px; letter-spacing: 2px;
+    text-transform: uppercase; color: #0b0e14; font-weight: 800;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    border-radius: 999px; padding: 6px 16px; box-shadow: 0 6px 20px rgba(55,211,195,0.2);
   }
 
-  /* form */
+  /* glass cards */
   .card {
     background: linear-gradient(180deg, var(--panel), var(--panel-2));
-    border: 1px solid var(--line); border-radius: 14px; padding: 20px;
+    border: 1px solid var(--line); border-radius: 18px; padding: 22px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   }
-  form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
-  .field { flex: 1 1 220px; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
-  .field.small { flex: 0 1 130px; }
-  label { font-size: 12px; color: var(--muted); letter-spacing: 0.4px; }
+  .card.input-card { padding: 24px; }
+
+  form { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+  .field { flex: 1 1 220px; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+  .field.small { flex: 0 1 140px; }
+  label { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
   input {
-    background: #0e121b; border: 1px solid var(--line); color: var(--fg);
-    border-radius: 10px; padding: 12px 14px; font-size: 15px; font-family: var(--mono);
-    min-width: 0; width: 100%;
+    background: #0b0f17; border: 1px solid var(--line-2); color: var(--fg);
+    border-radius: 11px; padding: 14px 15px; font-size: 15px; font-family: var(--mono);
+    min-width: 0; width: 100%; transition: border-color .15s, box-shadow .15s;
   }
-  input:focus { outline: none; border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(55,211,195,0.12); }
+  input::placeholder { color: #5f6c81; }
+  input:focus { outline: none; border-color: var(--accent-2); box-shadow: 0 0 0 4px rgba(55,211,195,0.14), 0 0 30px rgba(55,211,195,0.1); }
   button {
-    background: linear-gradient(180deg, var(--accent), #e0932f); color: #1a140a;
-    border: 0; border-radius: 10px; padding: 12px 22px; font-size: 15px; font-weight: 700;
-    cursor: pointer; white-space: nowrap;
+    background: linear-gradient(180deg, #ffbf5a, #e0932f); color: #1a140a;
+    border: 0; border-radius: 11px; padding: 14px 26px; font-size: 15px; font-weight: 800;
+    cursor: pointer; white-space: nowrap; letter-spacing: .3px;
+    box-shadow: 0 10px 26px rgba(242,165,65,0.3); transition: transform .12s, box-shadow .12s, filter .12s;
   }
-  button:disabled { opacity: 0.55; cursor: progress; }
-  .examples { margin-top: 14px; font-size: 13px; color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  button:hover { transform: translateY(-1px); box-shadow: 0 14px 32px rgba(242,165,65,0.42); filter: brightness(1.05); }
+  button:active { transform: translateY(0); }
+  button:disabled { opacity: 0.6; cursor: progress; transform: none; filter: saturate(0.7); }
+  .examples { margin-top: 16px; font-size: 13px; color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   .chip {
     font-family: var(--mono); font-size: 12px; color: var(--accent-2);
-    border: 1px solid var(--line); border-radius: 8px; padding: 4px 9px; cursor: pointer; background: #0e121b;
+    border: 1px solid var(--line-2); border-radius: 9px; padding: 5px 10px; cursor: pointer; background: #0b0f17;
+    transition: border-color .15s, box-shadow .15s, transform .1s;
   }
-  .chip:hover { border-color: var(--accent-2); }
+  .chip:hover { border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(55,211,195,0.1); transform: translateY(-1px); }
 
-  /* status */
-  #status { margin: 26px 0 0; text-align: center; color: var(--muted); min-height: 24px; }
+  /* status / loader */
+  #status { margin: 30px 0 0; text-align: center; color: var(--muted); min-height: 24px; font-size: 15px; }
   .spinner {
-    display: inline-block; width: 15px; height: 15px; margin-right: 8px; vertical-align: -2px;
-    border: 2px solid var(--line); border-top-color: var(--accent-2); border-radius: 50%;
-    animation: spin 0.8s linear infinite;
+    display: inline-block; width: 16px; height: 16px; margin-right: 9px; vertical-align: -3px;
+    border: 2px solid rgba(255,255,255,0.12); border-top-color: var(--accent-2); border-right-color: var(--accent);
+    border-radius: 50%; animation: spin 0.75s linear infinite;
+    box-shadow: 0 0 14px rgba(55,211,195,0.35);
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .error { color: var(--high); }
+  #status:not(.error) { animation: pulsetext 1.6s ease-in-out infinite; }
+  @keyframes pulsetext { 50% { opacity: .62; } }
+  .error { color: var(--high); animation: none !important; }
 
   /* results */
-  #prhead { margin: 30px 0 10px; display: none; }
+  #prhead { margin: 34px 0 10px; display: none; }
   #prhead a { color: var(--accent-2); text-decoration: none; font-family: var(--mono); font-size: 14px; }
-  #prhead h2 { margin: 6px 0 0; font-size: 20px; }
+  #prhead a:hover { text-decoration: underline; }
+  #prhead h2 { margin: 7px 0 0; font-size: 22px; }
+
+  #results > * { animation: rise .5s cubic-bezier(.2,.7,.2,1) both; }
+  #results > *:nth-child(2) { animation-delay: .06s; }
+  #results > *:nth-child(3) { animation-delay: .12s; }
+  #results > *:nth-child(4) { animation-delay: .18s; }
+  #results > *:nth-child(n+5) { animation-delay: .24s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
   .file { margin-top: 16px; }
-  .file-name { font-family: var(--mono); font-size: 14px; color: var(--accent); word-break: break-all; }
-  .file-sum { color: var(--muted); font-size: 13.5px; margin-top: 6px; line-height: 1.5; }
-  .verdict { margin-top: 14px; padding: 12px 14px; border-radius: 10px; background: #0e121b; border: 1px solid var(--line); line-height: 1.5; }
-  .verdict .label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+  .file-name { font-family: var(--mono); font-size: 15px; color: var(--accent); word-break: break-all; }
+  .file-sum { color: #aab7ca; font-size: 14px; margin-top: 7px; line-height: 1.55; }
+  .verdict { margin-top: 16px; padding: 14px 16px; border-radius: 12px; background: #0b0f17; border: 1px solid var(--line); line-height: 1.55; }
+  .verdict .label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
 
-  .warn { margin-top: 12px; border-left: 3px solid var(--low); padding: 10px 14px; background: rgba(255,255,255,0.02); border-radius: 0 8px 8px 0; }
-  .warn.high { border-left-color: var(--high); }
-  .warn.medium { border-left-color: var(--medium); }
-  .warn .sev { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
-  .warn.high .sev { color: var(--high); }
-  .warn.medium .sev { color: var(--medium); }
-  .warn.low .sev { color: var(--low); }
-  .warn .msg { margin-top: 5px; line-height: 1.5; }
-  .warn .action { margin-top: 6px; font-size: 12.5px; color: var(--muted); font-style: italic; }
-  .warn .based { margin-top: 7px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
-  .clean { color: var(--accent-2); font-size: 14px; margin-top: 12px; }
+  .warn { margin-top: 13px; border-left: 4px solid var(--low); padding: 12px 15px; background: rgba(255,255,255,0.02); border-radius: 0 10px 10px 0; }
+  .warn.high { border-left-color: var(--high); background: rgba(255,107,107,0.07); box-shadow: 0 0 26px rgba(255,107,107,0.08); }
+  .warn.medium { border-left-color: var(--medium); background: rgba(242,165,65,0.06); }
+  .warn .sev {
+    display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 999px;
+  }
+  .warn.high .sev { color: #fff; background: var(--high); box-shadow: 0 0 16px rgba(255,107,107,0.5); animation: dangerpulse 1.8s ease-in-out infinite; }
+  @keyframes dangerpulse { 50% { box-shadow: 0 0 26px rgba(255,107,107,0.85); } }
+  .warn.medium .sev { color: #1a140a; background: var(--medium); }
+  .warn.low .sev { color: #0b0e14; background: var(--low); }
+  .warn .msg { margin-top: 9px; line-height: 1.55; }
+  .warn .action { margin-top: 8px; font-size: 13px; color: #b9c5d6; font-style: italic; }
+  .warn .based { margin-top: 9px; font-family: var(--mono); font-size: 12px; color: var(--accent-2); background: rgba(55,211,195,0.08); display: inline-block; padding: 4px 9px; border-radius: 7px; }
+  .clean { color: var(--accent-2); font-size: 14px; margin-top: 13px; }
   .enginetag { font-family: var(--mono); font-size: 11px; color: var(--muted); float: right; }
 
-  .summary { margin: 26px 0 2px; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); font-size: 14px; color: var(--muted); }
+  .summary { margin: 28px 0 2px; padding: 14px 18px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); font-size: 15px; color: var(--muted); backdrop-filter: blur(8px); }
   .summary b { color: var(--fg); }
   .summary b.high { color: var(--high); }
   .summary b.medium { color: var(--medium); }
-  .history { margin-top: 14px; }
-  .history > .label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
-  .hist-item { font-size: 13px; margin-top: 7px; line-height: 1.45; color: #c7d0dd; }
-  .hist-item .h { font-family: var(--mono); color: var(--accent-2); font-size: 12px; }
+  .history { margin-top: 16px; }
+  .history > .label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+  .hist-item { font-size: 13.5px; margin-top: 9px; line-height: 1.5; color: #c7d0dd; padding-left: 14px; border-left: 2px solid var(--line-2); }
+  .hist-item .h { font-family: var(--mono); color: var(--accent-2); font-size: 12.5px; }
   .hist-item .who { color: var(--muted); }
-  .binary { color: var(--muted); font-size: 13.5px; margin-top: 6px; }
-  footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 50px; }
+  .binary { color: var(--muted); font-size: 14px; margin-top: 7px; }
+  footer { text-align: center; color: var(--muted); font-size: 12.5px; margin-top: 56px; }
+  footer b { color: #c3cfe0; font-weight: 600; }
+
+  /* signature: live "stitched" threads from the cited commits to the warning */
+  .card.file { position: relative; }
+  .stitch-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;
+    z-index: 3; overflow: visible; filter: drop-shadow(0 0 6px rgba(55,211,195,0.5)); }
+  .thread { fill: none; stroke-width: 2.1; stroke-dasharray: 5 5; opacity: 0;
+    animation: threadIn .6s ease forwards var(--d), sew 1.25s linear infinite; }
+  @keyframes threadIn { to { opacity: .68; } }
+  @keyframes sew { to { stroke-dashoffset: -18; } }
+  .knot { opacity: 0; animation: knotIn .4s ease forwards var(--d); }
+  @keyframes knotIn { to { opacity: .9; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, ::after { animation: none !important; }
+    .thread, .knot { opacity: .45 !important; }
+  }
 </style>
 </head>
 <body>
+  <canvas id="bg" aria-hidden="true"></canvas>
   <div class="wrap">
     <header>
       <div class="logo">
         <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <rect x="6" y="6" width="36" height="36" rx="7" stroke="url(#g)" stroke-width="2.5"/>
-          <path d="M24 6V42" stroke="url(#g)" stroke-width="2" stroke-dasharray="3 4"/>
-          <path d="M6 24H42" stroke="url(#g)" stroke-width="2" stroke-dasharray="3 4"/>
-          <circle cx="24" cy="24" r="4.5" fill="url(#g)"/>
+          <rect x="6" y="6" width="36" height="36" rx="8" stroke="url(#g)" stroke-width="2.5"/>
+          <path class="dash" d="M24 6V42" stroke="url(#g)" stroke-width="2"/>
+          <path class="dash" d="M6 24H42" stroke="url(#g)" stroke-width="2"/>
+          <circle cx="24" cy="24" r="5" fill="url(#g)"/>
           <defs><linearGradient id="g" x1="6" y1="6" x2="42" y2="42"><stop stop-color="#f2a541"/><stop offset="1" stop-color="#37d3c3"/></linearGradient></defs>
         </svg>
         <h1>Patchwork</h1>
@@ -150,7 +204,7 @@
       <span class="badge">Kiroween · Frankenstein</span>
     </header>
 
-    <div class="card">
+    <div class="card input-card">
       <form id="form">
         <div class="field">
           <label for="repo">GitHub repository</label>
@@ -178,10 +232,68 @@
     </div>
     <div id="results"></div>
 
-    <footer>Patchwork · built with Kiro for Kiroween 2026</footer>
+    <footer>Patchwork · built with <b>Kiro</b> for Kiroween 2026</footer>
   </div>
 
 <script>
+/* ---- living workshop backdrop: drifting stitch threads + glow + sparks ---- */
+(function () {
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const cv = document.getElementById("bg"), ctx = cv.getContext("2d");
+  let W, H, DPR;
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = cv.width = Math.floor(innerWidth * DPR);
+    H = cv.height = Math.floor(innerHeight * DPR);
+    cv.style.width = innerWidth + "px"; cv.style.height = innerHeight + "px";
+  }
+  resize(); addEventListener("resize", resize);
+  const glows = [
+    { h: 38,  x: .26, y: .18, r: .55, a: .40, sx: .00018, sy: .00013 },
+    { h: 172, x: .78, y: .30, r: .50, a: .34, sx: .00015, sy: .00019 },
+    { h: 258, x: .52, y: .82, r: .60, a: .26, sx: .00012, sy: .00016 },
+  ];
+  const sparks = Array.from({ length: 26 }, () => ({
+    x: Math.random(), y: Math.random(), s: .4 + Math.random(),
+    vy: -(.02 + Math.random() * .05), c: Math.floor(Math.random() * 3),
+  }));
+  const SPARK = ["242,165,65", "55,211,195", "157,139,255"];
+  function frame(t) {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = "#0b0e14"; ctx.fillRect(0, 0, W, H);
+    // glows
+    ctx.globalCompositeOperation = "lighter";
+    for (const g of glows) {
+      const cx = (g.x + Math.sin(t * g.sx) * .06) * W;
+      const cy = (g.y + Math.cos(t * g.sy) * .06) * H;
+      const rad = g.r * Math.max(W, H);
+      const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
+      grd.addColorStop(0, `hsla(${g.h},85%,58%,${g.a})`);
+      grd.addColorStop(1, `hsla(${g.h},85%,58%,0)`);
+      ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H);
+    }
+    ctx.globalCompositeOperation = "source-over";
+    // drifting stitch threads
+    ctx.lineWidth = 1.2 * DPR; ctx.setLineDash([2 * DPR, 14 * DPR]);
+    for (let i = 0; i < 7; i++) {
+      const y = (((i / 7) + t * 0.000012) % 1.2 - .1) * H;
+      ctx.lineDashOffset = -t * 0.02 * DPR + i * 20;
+      ctx.strokeStyle = `rgba(190,205,230,${0.04 + 0.03 * Math.abs(Math.sin(t * 0.0003 + i))})`;
+      ctx.beginPath(); ctx.moveTo(-40, y); ctx.lineTo(W + 40, y + 120 * DPR * Math.sin(t * 0.0002 + i)); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    // sparks
+    for (const p of sparks) {
+      p.y += p.vy * 0.001; if (p.y < -0.02) { p.y = 1.02; p.x = Math.random(); }
+      ctx.fillStyle = `rgba(${SPARK[p.c]},${0.18 + 0.18 * Math.abs(Math.sin(t * 0.001 + p.x * 9))})`;
+      ctx.beginPath(); ctx.arc(p.x * W, p.y * H, (0.8 + p.s) * DPR, 0, 7); ctx.fill();
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+
+/* ---- app logic (unchanged) ---- */
 const $ = (s) => document.querySelector(s);
 const form = $("#form"), statusEl = $("#status"), results = $("#results"),
       prhead = $("#prhead"), run = $("#run");
@@ -278,7 +390,70 @@ function render(data) {
     </div>`;
   }).join("");
   results.innerHTML = summary + cards;
+  scheduleStitch();
 }
+
+/* ---- signature stitch: draw live threads from the cited commits to the warning ---- */
+function matchSubject(subject, basedText){
+  const s = subject.toLowerCase().replace(/\s+/g, " ").trim();
+  return s.length >= 10 && basedText.includes(s.slice(0, Math.min(s.length, 24)));
+}
+function drawThread(svg, x1, y1, x2, y2, idx){
+  const NS = "http://www.w3.org/2000/svg";
+  const col = idx % 2 ? "#f2a541" : "#37d3c3";
+  // bow the thread out to the left so stacked commit→warning pairs show a clear arc
+  const mx = Math.min(x1, x2) - 26 - idx * 10, my = (y1 + y2) / 2;
+  const p = document.createElementNS(NS, "path");
+  p.setAttribute("d", `M ${x1} ${y1} Q ${mx} ${my} ${x2} ${y2}`);
+  p.setAttribute("class", "thread"); p.setAttribute("stroke", col);
+  p.style.setProperty("--d", (idx * 0.15) + "s");
+  svg.appendChild(p);
+  for (const [x, y] of [[x1, y1], [x2, y2]]) {
+    const c = document.createElementNS(NS, "circle");
+    c.setAttribute("cx", x); c.setAttribute("cy", y); c.setAttribute("r", "2.6");
+    c.setAttribute("class", "knot"); c.setAttribute("fill", col);
+    c.style.setProperty("--d", (idx * 0.15) + "s");
+    svg.appendChild(c);
+  }
+}
+function stitch(){
+  const NS = "http://www.w3.org/2000/svg";
+  document.querySelectorAll(".card.file").forEach(card => {
+    const old = card.querySelector(".stitch-svg"); if (old) old.remove();
+    const warns = [...card.querySelectorAll(".warn")];
+    const hists = [...card.querySelectorAll(".hist-item")];
+    if (!warns.length || !hists.length) return;
+    const cr = card.getBoundingClientRect();
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("class", "stitch-svg");
+    svg.setAttribute("viewBox", `0 0 ${card.clientWidth} ${card.clientHeight}`);
+    svg.setAttribute("preserveAspectRatio", "none");
+    let idx = 0;
+    for (const warn of warns) {
+      const based = warn.querySelector(".based"); if (!based) continue;
+      const basedText = based.textContent.toLowerCase();
+      const tr = based.getBoundingClientRect();
+      const tx = tr.left - cr.left + 10, ty = tr.top - cr.top + tr.height / 2;
+      for (const h of hists) {
+        const hashEl = h.querySelector(".h"); if (!hashEl) continue;
+        const whoEl = h.querySelector(".who");
+        const subject = h.textContent
+          .replace(hashEl.textContent, "").replace(whoEl ? whoEl.textContent : "", "").trim();
+        const hash = hashEl.textContent.trim().toLowerCase().slice(0, 7);
+        if (!(basedText.includes(hash) || matchSubject(subject, basedText))) continue;
+        const hr = hashEl.getBoundingClientRect();
+        drawThread(svg, hr.right - cr.left, hr.top - cr.top + hr.height / 2, tx, ty, idx++);
+      }
+    }
+    if (svg.childNodes.length) card.appendChild(svg);
+  });
+}
+let stitchRAF;
+function scheduleStitch(){
+  cancelAnimationFrame(stitchRAF);
+  stitchRAF = requestAnimationFrame(() => requestAnimationFrame(stitch));
+}
+addEventListener("resize", () => { if (document.querySelector(".card.file .warn")) scheduleStitch(); });
 </script>
 </body>
 </html>
