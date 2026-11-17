@@ -11,13 +11,16 @@ lives in commit history almost nobody reads. When an engineer leaves, the *why* 
 New contributors then change code they don't understand and quietly reintroduce old bugs.
 
 ## The idea (the "Frankenstein")
-Patchwork **stitches together** the expertise of every engineer who shaped an area of the code
-into **one assistant** that guards it. Point it at a GitHub pull request; for each changed file
-it reconstructs the area's knowledge from history and warns you when your change undoes a
-decision that was made on purpose — citing the exact commit it came from.
+Every engineer who shaped a file left something behind in its history — a fix, a lock, a reason
+they wrote down. When they move on, those parts are scattered across years of commits nobody
+re-reads. Patchwork **gathers the parts and stitches them into one guardian**: point it at a
+pull request and, for each changed file, it reconstructs that knowledge from history and warns
+you when your change undoes a decision that was made on purpose — citing the exact commit it
+came from.
 
-> The costume is an inventor's workshop: many parts, assembled into one creation. Nothing
-> supernatural — just history, made to speak at the moment it matters.
+> A creature assembled from many makers, that remembers **why** long after they're gone. The
+> costume is an inventor's workshop — many parts, one creation. Nothing supernatural: just
+> history, made to speak at the moment it matters.
 
 ## It works on real repositories
 Run it on `expressjs/express` and it catches that lowering the `body-parser` version would
@@ -48,6 +51,21 @@ permissions: { contents: read, pull-requests: write }
 ```
 That's the real test of the idea: not "would someone try this once", but "would a team let it
 stand guard on their code every day."
+
+<details><summary><b>Example comment</b> (real output on a PR that lowers <code>body-parser</code> in <code>expressjs/express</code>)</summary>
+
+> ## 🧵 Patchwork review
+>
+> Reviewed **1** changed file(s) — **1** point(s) worth a second look (**1 high-risk**).
+>
+> ### `package.json`
+> _"package.json" has 60 recorded changes by 23 contributor(s). Primary: Wes Todd, dependabot[bot], Ulises Gascón. 8 commit(s) carry explicit reasoning worth heeding._
+>
+> 🔴 **HIGH** — The history shows specific version requirements for body-parser to address vulnerabilities such as CVE-2026-12590 (requiring ^2.3.0) and CVE-2025-13466. Downgrading or using ~1.20.9 may reintroduce security risks.
+> > ↳ based on: deps: bump body-parser to ^2.3.0 to fix CVE-2026-12590 (#7390) and deps: body-parser@^2.2.1 (#6922)
+> > ↳ next step: Read the commit for CVE-2026-12590 and confirm your version choice satisfies the security requirements.
+
+</details>
 
 ## Built with Kiro
 Patchwork was built spec-first with Kiro, using its core features:

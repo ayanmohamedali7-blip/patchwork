@@ -40,7 +40,7 @@ function resolvePrNumber() {
 const sevOf = (w) => (w.severity || "low").toLowerCase();
 const EMOJI = { high: "🔴", medium: "🟠", low: "🟡" };
 
-function buildComment(result) {
+export function buildComment(result) {
   const out = [MARKER, "## 🧵 Patchwork review", ""];
   const flagged = result.files.filter((f) => f.review && f.review.warnings && f.review.warnings.length);
   const total = flagged.reduce((n, f) => n + f.review.warnings.length, 0);
@@ -115,7 +115,11 @@ async function main() {
   console.log(`Patchwork: review posted → ${link}`);
 }
 
-main().catch((err) => {
-  console.error("Patchwork action failed:", err && err.message ? err.message : err);
-  process.exit(1);
-});
+// Run only when invoked directly (node src/action.mjs), not when imported.
+import { fileURLToPath } from "node:url";
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch((err) => {
+    console.error("Patchwork action failed:", err && err.message ? err.message : err);
+    process.exit(1);
+  });
+}
