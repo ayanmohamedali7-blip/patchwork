@@ -30,6 +30,46 @@ function send(res, status, body, type = "text/plain; charset=utf-8") {
   res.end(body);
 }
 
+// --- In-memory cache + per-IP rate limit (zero dependency) ---
+// The public demo holds shared GitHub/Gemini quota, so identical requests are
+// cached for an hour (the ready-made examples then open instantly and cost
+// nothing), and only real upstream computations count against a gentle per-IP
+// limit — so one visitor can't drain the keys before a judge arrives.
+const CACHE_TTL_MS = 60 * 60 * 1000; // 60 minutes
+const RATE_MAX = 15;                 // upstream reviews per IP…
+const RATE_WINDOW_MS = 60 * 60 * 1000; // …per hour
+const reviewCache = new Map();       // "repo|pr" -> { at, result }
+const rateHits = new Map();          // ip -> [timestamps]
+
+const cacheKey = (repo, pr) => `${String(repo).toLowerCase()}|${pr ?? "latest"}`;
+
+function clientIp(req) {
+  const xff = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim();
+  return xff || req.socket?.remoteAddress || "unknown";
+}
+function underRateLimit(ip) {
+  const now = Date.now();
+  const arr = (rateHits.get(ip) || []).filter((t) => now - t < RATE_WINDOW_MS);
+  rateHits.set(ip, arr);
+  if (rateHits.size > 5000) rateHits.clear(); // guard against unbounded growth
+  return arr.length < RATE_MAX;
+}
+function recordHit(ip) {
+  const arr = rateHits.get(ip) || [];
+  arr.push(Date.now());
+  rateHits.set(ip, arr);
+}
+function cacheGet(key) {
+  const hit = reviewCache.get(key);
+  if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.result;
+  if (hit) reviewCache.delete(key);
+  return null;
+}
+function cacheSet(key, result) {
+  if (reviewCache.size > 500) reviewCache.clear(); // simple bound
+  reviewCache.set(key, { at: Date.now(), result });
+}
+
 // A self-contained SVG badge any repo can embed: "Guarded by Patchwork".
 function badgeSvg() {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="196" height="28" role="img" aria-label="Guarded by Patchwork">
@@ -86,9 +126,24 @@ const server = createServer(async (req, res) => {
       if (!input.repo) {
         return send(res, 400, JSON.stringify({ error: "Provide a repo like owner/name." }), MIME[".json"]);
       }
+      // Serve a cached result instantly unless the caller asked to refresh.
+      const key = cacheKey(input.repo, input.pr);
+      if (!input.refresh) {
+        const cached = cacheGet(key);
+        if (cached) return send(res, 200, JSON.stringify({ ...cached, cached: true }), MIME[".json"]);
+      }
+      // A real upstream review is about to run — this one counts against the limit.
+      const ip = clientIp(req);
+      if (!underRateLimit(ip)) {
+        return send(res, 429, JSON.stringify({
+          error: "You've run quite a few fresh reviews this hour. The ready-made examples still open instantly — please try again a little later.",
+        }), MIME[".json"]);
+      }
+      recordHit(ip);
       try {
         const result = await reviewPullRequest({ repo: input.repo, pr: input.pr, token });
-        return send(res, 200, JSON.stringify(result), MIME[".json"]);
+        cacheSet(key, result);
+        return send(res, 200, JSON.stringify({ ...result, cached: false }), MIME[".json"]);
       } catch (err) {
         // Generic message to the client; detail to server logs only.
         console.error("review error:", err);

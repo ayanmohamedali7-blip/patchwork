@@ -45,19 +45,30 @@ function eventAction() {
   try { return JSON.parse(readFileSync(path, "utf8")).action || ""; } catch { return ""; }
 }
 
-// The new-side line to anchor an inline comment on: the first added (else context) line of the first hunk.
-export function anchorLine(patch) {
+// The new-side line to anchor an inline comment on.
+// With a `hint` (a line of code the warning is about), anchor on the exact added
+// line that contains it; otherwise (and as a safe fallback) the first added — else
+// context — line of the first hunk. A model hint is only ever used to pick a REAL
+// changed line, so a bad hint can never produce an invalid anchor.
+export function anchorLine(patch, hint) {
   const lines = String(patch || "").split("\n");
-  let cur = null, firstContext = null;
+  const want = String(hint || "").trim();
+  let cur = null, firstAdded = null, firstContext = null;
   for (const l of lines) {
     const m = l.match(/^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
     if (m) { cur = parseInt(m[1], 10); continue; }
     if (cur == null) continue;
-    if (l.startsWith("+") && !l.startsWith("+++")) return cur;        // an added line — anchor here
-    if (l.startsWith(" ")) { if (firstContext == null) firstContext = cur; cur++; }  // context advances new side
+    if (l.startsWith("+") && !l.startsWith("+++")) {
+      if (firstAdded == null) firstAdded = cur;
+      if (want.length > 3 && l.slice(1).includes(want)) return cur;   // precise: the exact changed line
+      cur++;                                                           // added lines advance the new side
+    } else if (l.startsWith(" ")) {
+      if (firstContext == null) firstContext = cur;
+      cur++;                                                          // context advances the new side
+    }
     // "-" removed lines do not advance the new-side counter
   }
-  return firstContext;
+  return firstAdded != null ? firstAdded : firstContext;
 }
 
 // Post a PR review with comments anchored to the exact changed lines.
@@ -159,7 +170,7 @@ async function main() {
       for (const f of result.files) {
         const w = f.review && f.review.warnings && f.review.warnings[0];
         if (!w) continue;
-        const line = anchorLine(patchByFile[f.file]);
+        const line = anchorLine(patchByFile[f.file], w.codeHint);
         if (!line) continue;
         let body = `🧵 **Patchwork** — ${sevOf(w).toUpperCase()}: ${w.message}`;
         if (w.basedOn) body += `\n\n↳ based on: ${w.basedOn}`;

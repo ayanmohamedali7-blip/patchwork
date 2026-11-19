@@ -307,31 +307,42 @@ document.querySelectorAll(".chip").forEach(c =>
   c.addEventListener("click", () => { $("#repo").value = c.dataset.repo; $("#pr").value = ""; form.requestSubmit(); })
 );
 
+let nextRefresh = false; // set by the "re-run fresh" link to bypass the cache once
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const repo = $("#repo").value.trim();
   const pr = $("#pr").value.trim();
+  const refresh = nextRefresh; nextRefresh = false;
   if (!repo) {
     results.innerHTML = ""; prhead.style.display = "none";
-    statusEl.className = "error";
+    statusEl.className = "error"; statusEl.style.animation = "";
     statusEl.textContent = "⚠ Enter a repository, e.g. expressjs/express";
     $("#repo").focus();
     return;
   }
   run.disabled = true; results.innerHTML = ""; prhead.style.display = "none";
-  statusEl.className = "";
+  statusEl.className = ""; statusEl.style.animation = "";
   statusEl.innerHTML = '<span class="spinner"></span> Reading the history, stitching the knowledge…';
   try {
     const res = await fetch("/api/review", {
       method: "POST", headers: {"content-type":"application/json"},
-      body: JSON.stringify({ repo, pr: pr || undefined })
+      body: JSON.stringify({ repo, pr: pr || undefined, refresh: refresh || undefined })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Review failed.");
     render(data);
-    statusEl.innerHTML = "";
+    if (data.cached) {
+      statusEl.className = ""; statusEl.style.animation = "none";
+      statusEl.innerHTML = 'Showing a recent cached result · <a href="#" id="refreshlink" style="color:var(--accent-2,#37d3c3)">re-run fresh</a>';
+      const rl = $("#refreshlink");
+      if (rl) rl.addEventListener("click", (ev) => { ev.preventDefault(); nextRefresh = true; form.requestSubmit(); });
+    } else {
+      statusEl.innerHTML = "";
+    }
   } catch (err) {
-    statusEl.className = "error"; statusEl.textContent = "⚠ " + err.message;
+    statusEl.className = "error"; statusEl.style.animation = "";
+    statusEl.textContent = "⚠ " + err.message;
   } finally { run.disabled = false; }
 });
 

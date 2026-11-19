@@ -1,0 +1,29 @@
+name: Keep the demo warm
+
+# Render's free tier sleeps after inactivity (a cold start adds ~50s). This pings
+# the live demo every ~12 minutes so a judge who opens the link gets an instant page.
+# Free: scheduled workflows cost nothing on a public repo.
+
+on:
+  schedule:
+    - cron: "*/12 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: keep-warm
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wake the live demo
+        run: |
+          echo "Pinging the Patchwork demo to keep it warm…"
+          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 --retry 2 https://patchwork-1-axbd.onrender.com/ || echo "000")
+          echo "HTTP $code"
+          # A woken server answers 200; a slow cold start is still a success for our purpose.
+          if [ "$code" = "000" ]; then echo "No response (will retry next run)"; fi

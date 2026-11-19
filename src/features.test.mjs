@@ -45,6 +45,20 @@ test("anchorLine falls back to a context line when there is no addition", () => 
   assert.equal(anchorLine(patch), 5);
 });
 
+test("anchorLine targets the exact added line a hint points to", () => {
+  const patch = [
+    "diff --git a/f b/f",
+    "@@ -1,2 +1,4 @@",
+    " a();",               // new line 1
+    "+b();",               // new line 2
+    "+dangerous(secret);", // new line 3
+    "+c();",               // new line 4
+  ].join("\n");
+  assert.equal(anchorLine(patch, "dangerous(secret);"), 3); // precise
+  assert.equal(anchorLine(patch, "no-such-line"), 2);       // bad hint -> first added
+  assert.equal(anchorLine(patch), 2);                       // no hint -> first added
+});
+
 test("Kiro Power MCP server lists its tools over stdio", async () => {
   const p = spawn("node", [join(here, "..", "power-patchwork", "server.mjs")], { stdio: ["pipe", "pipe", "ignore"] });
   let out = "";

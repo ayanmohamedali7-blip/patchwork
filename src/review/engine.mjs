@@ -39,7 +39,8 @@ Respond with STRICT JSON only, no prose, in this shape:
       "severity": "high|medium|low",
       "message": "specific, actionable",
       "basedOn": "which recorded reason/commit this comes from",
-      "action": "one concrete next step the author should take, grounded in the commit history (e.g. 'Read commit abc1234 and confirm your change preserves the exactly-once guard')"
+      "action": "one concrete next step the author should take, grounded in the commit history (e.g. 'Read commit abc1234 and confirm your change preserves the exactly-once guard')",
+      "codeHint": "OPTIONAL: if this warning is about one specific changed line, copy that exact line VERBATIM from the diff above (an added '+' line without its leading '+', or a context line) so the comment can be placed on it; omit if it is about the file as a whole"
     }
   ]
 }
