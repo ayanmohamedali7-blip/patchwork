@@ -55,6 +55,11 @@ permissions: { contents: read, pull-requests: write }
 That's the real test of the idea: not "would someone try this once", but "would a team let it
 stand guard on their code every day."
 
+**Proven on this repo — [PR #2](https://github.com/ayanmohamedali7-blip/patchwork/pull/2).** A
+change reintroduced an error-message information leak that an earlier commit had fixed. Patchwork
+caught it automatically: a **HIGH** summary *and* an inline comment on the exact changed line,
+citing the commit that fixed it and naming the person who made that call.
+
 <details><summary><b>Example comment</b> (real output on a PR that lowers <code>body-parser</code> in <code>expressjs/express</code>)</summary>
 
 > ## 🧵 Patchwork review
@@ -74,7 +79,10 @@ stand guard on their code every day."
 Patchwork was built spec-first with Kiro, using its core features:
 - **Steering** (`.kiro/steering/`) — product, tech, and structure rules that keep every change on
   track, including the hard theme boundary (an inventor's workshop; no occult content).
-- **Specs** (`.kiro/specs/patchwork-review/`) — requirements (EARS) → design → tasks.
+- **Specs** — requirements (EARS) → design → tasks, for the core
+  ([`patchwork-review`](.kiro/specs/patchwork-review/)) *and* the advanced features
+  ([`patchwork-guardian`](.kiro/specs/patchwork-guardian/): the Action, attribution, inline
+  review, and the Power). The advanced work was spec-driven too, not bolted on.
 - **Agent hooks** (`.kiro/hooks/`) — *dogfood review*: on every source save, Kiro runs Patchwork's
   own idea on the edit and warns if it undoes a recorded decision; plus a *syntax guard* on Stop.
 - **MCP** (`.kiro/settings/mcp.json`) — GitHub + fetch servers, so the Kiro agent can read repos
