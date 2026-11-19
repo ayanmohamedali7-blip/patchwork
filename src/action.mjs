@@ -46,7 +46,7 @@ function eventAction() {
 }
 
 // The new-side line to anchor an inline comment on: the first added (else context) line of the first hunk.
-function anchorLine(patch) {
+export function anchorLine(patch) {
   const lines = String(patch || "").split("\n");
   let cur = null, firstContext = null;
   for (const l of lines) {

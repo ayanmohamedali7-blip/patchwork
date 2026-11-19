@@ -30,6 +30,18 @@ function send(res, status, body, type = "text/plain; charset=utf-8") {
   res.end(body);
 }
 
+// A self-contained SVG badge any repo can embed: "Guarded by Patchwork".
+function badgeSvg() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="196" height="28" role="img" aria-label="Guarded by Patchwork">
+  <defs><linearGradient id="pg" x1="0" x2="1"><stop offset="0" stop-color="#f2a541"/><stop offset=".6" stop-color="#37d3c3"/><stop offset="1" stop-color="#9d8bff"/></linearGradient></defs>
+  <rect width="196" height="28" rx="7" fill="#11161f"/>
+  <rect x=".75" y=".75" width="194.5" height="26.5" rx="6.3" fill="none" stroke="url(#pg)" stroke-width="1.5"/>
+  <circle cx="17" cy="14" r="4" fill="url(#pg)"/>
+  <path d="M17 7V21M10 14H24" stroke="url(#pg)" stroke-width="1.2" stroke-dasharray="2 3" opacity=".6"/>
+  <text x="30" y="18.5" font-family="Segoe UI,Arial,sans-serif" font-size="12.5" fill="#e9eef6" font-weight="600">Guarded by <tspan fill="url(#pg)" font-weight="800">Patchwork</tspan></text>
+</svg>`;
+}
+
 async function serveStatic(req, res) {
   let path = decodeURIComponent(new URL(req.url, "http://x").pathname);
   if (path === "/") path = "/index.html";
@@ -59,6 +71,10 @@ function readBody(req) {
 const server = createServer(async (req, res) => {
   try {
     console.log(`${req.method} ${req.url}`);
+    if (req.method === "GET" && /^\/badge(\/.*)?\.svg$/.test(req.url.split("?")[0])) {
+      res.writeHead(200, { "content-type": "image/svg+xml", "cache-control": "max-age=3600" });
+      return res.end(badgeSvg());
+    }
     if (req.method === "POST" && req.url === "/api/review") {
       const body = await readBody(req);
       let input = {};

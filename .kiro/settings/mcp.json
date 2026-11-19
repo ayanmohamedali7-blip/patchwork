@@ -14,6 +14,16 @@
       "args": ["mcp-server-fetch"],
       "disabled": false,
       "autoApprove": ["fetch"]
+    },
+    "patchwork": {
+      "command": "node",
+      "args": ["power-patchwork/server.mjs"],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}",
+        "GEMINI_API_KEY": "${GEMINI_API_KEY}"
+      },
+      "disabled": false,
+      "autoApprove": ["file_knowledge"]
     }
   }
 }

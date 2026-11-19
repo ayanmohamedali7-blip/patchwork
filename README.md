@@ -1,6 +1,9 @@
 <h1 align="center">🔧 Patchwork</h1>
 <p align="center"><b>The reasons behind your code leave when people do. Patchwork stitches them back together — and warns you before a change breaks what someone built on purpose.</b></p>
 <p align="center"><i>Kiroween 2026 · Category: Frankenstein</i></p>
+<p align="center"><a href="https://patchwork-1-axbd.onrender.com"><img src="https://patchwork-1-axbd.onrender.com/badge/ayanmohamedali7-blip/patchwork.svg" alt="Guarded by Patchwork" /></a></p>
+
+> **Add the badge to any repo:** `[![Guarded by Patchwork](https://patchwork-1-axbd.onrender.com/badge/OWNER/REPO.svg)](https://patchwork-1-axbd.onrender.com)`
 
 ---
 
@@ -81,6 +84,9 @@ Patchwork was built spec-first with Kiro, using its core features:
   the diff splitter never loses or mis-attributes a file (even when a patch body contains lines
   that *look* like diff headers), and `parseRepo` reads the same `{owner, repo}` from shorthand,
   URL, `.git` and SSH forms. A tiny seeded harness keeps it dependency-free and reproducible.
+- **Kiro Power** ([`power-patchwork/`](power-patchwork/)) — Patchwork is packaged as a reusable
+  Power: a zero-dependency stdio **MCP server** exposing `patchwork_review` and `file_knowledge`
+  so the Kiro agent in *any* workspace can ask a file's history for its reasons before changing it.
 
 ## Run it locally
 ```bash
