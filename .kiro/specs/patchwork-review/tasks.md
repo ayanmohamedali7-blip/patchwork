@@ -11,6 +11,10 @@
 - [x] 6. `.env` loader; model configuration by env; secrets kept server-side. _(Non-functional)_
 - [x] 7. Kiro integration — steering docs, MCP (GitHub + fetch), hooks (dogfood review, syntax guard).
 - [x] 8. Unit tests (`node --test`) for buildKnowledge, splitDiffByFile, heuristicReview.
-- [ ] 9. Deploy to a public URL; set env there.
-- [ ] 10. Empty/edge-case polish: huge diffs, binary files, private repos, rate-limit UX.
-- [ ] 11. Sub-3-minute demo video + Devpost submission; confirm `/.kiro` is committed.
+- [x] 9. Deploy to a public URL; set env there. _(Live on Render; `GEMINI_API_KEY` + read-only `GITHUB_TOKEN`.)_
+- [x] 10. Empty/edge-case polish: huge diffs, binary files, private repos, rate-limit UX.
+- [x] 11. Sub-3-minute demo video + Devpost submission; `/.kiro` committed at repo root.
+
+## Follow-on
+- [x] 12. Guard every PR automatically + attribution + inline review + reusable Power.
+      _(See `../patchwork-guardian/`.)_
