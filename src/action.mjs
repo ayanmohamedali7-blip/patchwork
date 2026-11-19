@@ -6,6 +6,7 @@
 
 import { readFileSync } from "node:fs";
 import { reviewPullRequest } from "./pipeline.mjs";
+import { getPullRequestDiff, splitDiffByFile } from "./github/fetch.mjs";
 
 const MARKER = "<!-- patchwork-review -->";
 const GH = "https://api.github.com";
@@ -37,6 +38,38 @@ function resolvePrNumber() {
   return Number.isInteger(n) && n > 0 ? n : null;
 }
 
+// The event action ("opened" / "synchronize" / "reopened").
+function eventAction() {
+  const path = env("GITHUB_EVENT_PATH");
+  if (!path) return "";
+  try { return JSON.parse(readFileSync(path, "utf8")).action || ""; } catch { return ""; }
+}
+
+// The new-side line to anchor an inline comment on: the first added (else context) line of the first hunk.
+function anchorLine(patch) {
+  const lines = String(patch || "").split("\n");
+  let cur = null, firstContext = null;
+  for (const l of lines) {
+    const m = l.match(/^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
+    if (m) { cur = parseInt(m[1], 10); continue; }
+    if (cur == null) continue;
+    if (l.startsWith("+") && !l.startsWith("+++")) return cur;        // an added line — anchor here
+    if (l.startsWith(" ")) { if (firstContext == null) firstContext = cur; cur++; }  // context advances new side
+    // "-" removed lines do not advance the new-side counter
+  }
+  return firstContext;
+}
+
+// Post a PR review with comments anchored to the exact changed lines.
+async function postInlineReview(owner, repo, number, token, comments) {
+  const res = await fetch(`${GH}/repos/${owner}/${repo}/pulls/${number}/reviews`, {
+    method: "POST",
+    headers: ghHeaders(token),
+    body: JSON.stringify({ event: "COMMENT", comments }),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${(await res.text().catch(() => "")).slice(0, 160)}`);
+}
+
 const sevOf = (w) => (w.severity || "low").toLowerCase();
 const EMOJI = { high: "🔴", medium: "🟠", low: "🟡" };
 
@@ -61,6 +94,7 @@ export function buildComment(result) {
         out.push(`${EMOJI[sevOf(w)] || "🟡"} **${sevOf(w).toUpperCase()}** — ${w.message}`);
         if (w.basedOn) out.push(`> ↳ based on: ${w.basedOn}`);
         if (w.action) out.push(`> ↳ next step: ${w.action}`);
+        if (w.askWho) out.push(`> 👤 Ask **${w.askWho}**${w.commit ? ` — who made this call in \`${w.commit}\`` : ""}`);
         out.push("");
       }
     }
@@ -113,6 +147,33 @@ async function main() {
   const result = await reviewPullRequest({ repo, pr: number, token });
   const link = await upsertComment(owner, name, number, token, buildComment(result));
   console.log(`Patchwork: review posted → ${link}`);
+
+  // Inline review on the exact changed lines — posted once, when the PR opens/reopens
+  // (not on every push, to avoid duplicate threads).
+  const act = eventAction();
+  if (act === "opened" || act === "reopened" || !act) {
+    try {
+      const diff = await getPullRequestDiff(owner, name, number, { token });
+      const patchByFile = Object.fromEntries(splitDiffByFile(diff).map((s) => [s.file, s.patch]));
+      const comments = [];
+      for (const f of result.files) {
+        const w = f.review && f.review.warnings && f.review.warnings[0];
+        if (!w) continue;
+        const line = anchorLine(patchByFile[f.file]);
+        if (!line) continue;
+        let body = `🧵 **Patchwork** — ${sevOf(w).toUpperCase()}: ${w.message}`;
+        if (w.basedOn) body += `\n\n↳ based on: ${w.basedOn}`;
+        if (w.askWho) body += `\n\n👤 Ask **${w.askWho}**${w.commit ? ` — who made this call in \`${w.commit}\`` : ""}`;
+        comments.push({ path: f.file, line, side: "RIGHT", body });
+      }
+      if (comments.length) {
+        await postInlineReview(owner, name, number, token, comments);
+        console.log(`Patchwork: posted ${comments.length} inline comment(s).`);
+      }
+    } catch (e) {
+      console.error("Patchwork: inline review skipped —", e && e.message ? e.message : e);
+    }
+  }
 }
 
 // Run only when invoked directly (node src/action.mjs), not when imported.

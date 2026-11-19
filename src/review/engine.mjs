@@ -46,6 +46,27 @@ Respond with STRICT JSON only, no prose, in this shape:
 If nothing in the history is at risk, return an empty "warnings" array and say so in the summary.`;
 }
 
+/**
+ * Attach "who to ask" to each warning: the author (and short hash) of the commit
+ * the warning is based on. Turns a warning into institutional memory — you know
+ * exactly who made the decision you might be undoing.
+ */
+export function enrichWarnings(warnings, knowledge) {
+  const notable = knowledge.notableCommits || [];
+  return (warnings || []).map((w) => {
+    const based = String(w.basedOn || "").toLowerCase();
+    const hit = notable.find((c) => {
+      const h = String(c.hash || "").slice(0, 8).toLowerCase();
+      const subj = String(c.subject || "").toLowerCase();
+      return (h && based.includes(h.slice(0, 7))) || (subj.length > 10 && based.includes(subj.slice(0, 22)));
+    });
+    if (hit && hit.author && hit.author !== "unknown") {
+      return { ...w, askWho: hit.author, commit: String(hit.hash || "").slice(0, 7) };
+    }
+    return w;
+  });
+}
+
 /** Heuristic reviewer — no AI. Flags risk from history signals so the pipeline always runs. */
 export function heuristicReview(knowledge, diff) {
   const warnings = [];
@@ -83,7 +104,7 @@ export function heuristicReview(knowledge, diff) {
       warnings.length === 0
         ? "No high-risk history signals found for this change."
         : `${warnings.length} point(s) from this area's history deserve attention before you change it.`,
-    warnings: warnings.slice(0, 6),
+    warnings: enrichWarnings(warnings.slice(0, 6), knowledge),
     engine: "heuristic",
   };
 }
@@ -139,7 +160,7 @@ async function geminiReview(knowledge, diff, { apiKey, model, retries = 4 }) {
   }
   return {
     summary: parsed.summary || "",
-    warnings: Array.isArray(parsed.warnings) ? parsed.warnings : [],
+    warnings: enrichWarnings(Array.isArray(parsed.warnings) ? parsed.warnings : [], knowledge),
     engine: `gemini:${model}`,
   };
 }

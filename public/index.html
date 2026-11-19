@@ -151,6 +151,9 @@
   .warn .msg { margin-top: 9px; line-height: 1.55; }
   .warn .action { margin-top: 8px; font-size: 13px; color: #b9c5d6; font-style: italic; }
   .warn .based { margin-top: 9px; font-family: var(--mono); font-size: 12px; color: var(--accent-2); background: rgba(55,211,195,0.08); display: inline-block; padding: 4px 9px; border-radius: 7px; }
+  .warn .askwho { margin-top: 9px; font-size: 13px; color: #e9eef6; background: rgba(157,139,255,0.12); border: 1px solid rgba(157,139,255,0.35); display: inline-block; padding: 5px 11px; border-radius: 999px; }
+  .warn .askwho b { color: var(--violet); }
+  .warn .askwho .h { font-family: var(--mono); color: var(--accent-2); font-size: 12px; }
   .clean { color: var(--accent-2); font-size: 14px; margin-top: 13px; }
   .enginetag { font-family: var(--mono); font-size: 11px; color: var(--muted); float: right; }
 
@@ -369,6 +372,7 @@ function render(data) {
         <div class="msg">${esc(w.message)}</div>
         ${w.action ? `<div class="action">↳ Next step: ${esc(w.action)}</div>` : ""}
         ${w.basedOn ? `<div class="based">↳ based on: ${esc(w.basedOn)}</div>` : ""}
+        ${w.askWho ? `<div class="askwho">👤 Ask <b>${esc(w.askWho)}</b>${w.commit ? ` — who made this call in <span class="h">${esc(w.commit)}</span>` : ""}</div>` : ""}
       </div>`;
     }).join("");
     const clean = (r.warnings || []).length === 0
