@@ -97,13 +97,15 @@
   button:hover { transform: translateY(-1px); box-shadow: 0 14px 32px rgba(242,165,65,0.42); filter: brightness(1.05); }
   button:active { transform: translateY(0); }
   button:disabled { opacity: 0.6; cursor: progress; transform: none; filter: saturate(0.7); }
-  .examples { margin-top: 16px; font-size: 13px; color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .examples { margin-top: 18px; font-size: 14px; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .examples > span:first-child { font-weight: 600; color: var(--fg); }
   .chip {
-    font-family: var(--mono); font-size: 12px; color: var(--accent-2);
-    border: 1px solid var(--line-2); border-radius: 9px; padding: 5px 10px; cursor: pointer; background: #0b0f17;
-    transition: border-color .15s, box-shadow .15s, transform .1s;
+    font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--accent-2);
+    border: 1px solid var(--accent-2); border-radius: 10px; padding: 9px 16px; cursor: pointer;
+    background: rgba(55,211,195,0.08);
+    transition: border-color .15s, box-shadow .15s, transform .1s, background .15s;
   }
-  .chip:hover { border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(55,211,195,0.1); transform: translateY(-1px); }
+  .chip:hover { background: rgba(55,211,195,0.16); box-shadow: 0 0 0 3px rgba(55,211,195,0.14); transform: translateY(-1px); }
 
   /* status / loader */
   #status { margin: 30px 0 0; text-align: center; color: var(--muted); min-height: 24px; font-size: 15px; }
@@ -220,7 +222,7 @@
         <button id="run" type="submit">Run review</button>
       </form>
       <div class="examples">
-        <span>Try:</span>
+        <span>Try one instantly — no sign-in:</span>
         <span class="chip" data-repo="expressjs/express">expressjs/express</span>
         <span class="chip" data-repo="sindresorhus/got">sindresorhus/got</span>
         <span class="chip" data-repo="honojs/hono">honojs/hono</span>
